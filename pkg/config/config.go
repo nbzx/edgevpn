@@ -66,6 +66,7 @@ type Config struct {
 	PeerGuard PeerGuard
 
 	Whitelist []multiaddr.Multiaddr
+	PeerPort  int
 }
 
 type PeerGuard struct {
@@ -227,6 +228,10 @@ func (c Config) ToOpts(l *logger.Logger) ([]node.Option, []vpn.Option, error) {
 
 	if len(c.Privkey) > 0 {
 		opts = append(opts, node.WithPrivKey(c.Privkey))
+	}
+
+	if c.PeerPort > 0 {
+		opts = append(opts, node.WithPeerPort(c.PeerPort))
 	}
 
 	vpnOpts := []vpn.Option{

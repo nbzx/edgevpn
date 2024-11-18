@@ -241,6 +241,13 @@ func WithStaticPeer(ip string, p peer.ID) func(cfg *Config) error {
 	}
 }
 
+func WithPeerPort(port int) func(cfg *Config) error {
+	return func(cfg *Config) error {
+		cfg.PeerPort = port
+		return nil
+	}
+}
+
 type OTPConfig struct {
 	Interval int    `yaml:"interval"`
 	Key      string `yaml:"key"`
@@ -259,6 +266,7 @@ type YAMLConnectionConfig struct {
 	Rendezvous     string `yaml:"rendezvous"`
 	MDNS           string `yaml:"mdns"`
 	MaxMessageSize int    `yaml:"max_message_size"`
+	PeerPort       int    `yaml:"peer_port"`
 }
 
 // Base64 returns the base64 string representation of the connection
@@ -291,6 +299,7 @@ func (y YAMLConnectionConfig) copy(mdns, dht bool, cfg *Config, d *discovery.DHT
 	m.DiscoveryServiceTag = y.MDNS
 	cfg.ExchangeKey = y.OTP.Crypto.Key
 	cfg.RoomName = y.RoomName
+	cfg.PeerPort = y.PeerPort
 	cfg.SealKeyInterval = y.OTP.Crypto.Interval
 	//	cfg.ServiceDiscovery = []ServiceDiscovery{d, m}
 	if mdns {

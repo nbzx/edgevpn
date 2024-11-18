@@ -76,6 +76,7 @@ type Config struct {
 
 	Sealer    Sealer
 	PeerGater Gater
+	PeerPort  int
 }
 
 type Gater interface {

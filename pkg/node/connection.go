@@ -17,6 +17,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
+	"fmt"
 	"io"
 	mrand "math/rand"
 	"net"
@@ -32,6 +33,21 @@ import (
 	hub "github.com/mudler/edgevpn/pkg/hub"
 	multiaddr "github.com/multiformats/go-multiaddr"
 )
+
+func listen_addrs(port int) []string {
+	addrs := []string{
+		"/ip4/0.0.0.0/tcp/%d",
+		"/ip4/0.0.0.0/udp/%d/quic-v1",
+		"/ip6/::/tcp/%d",
+		"/ip6/::/udp/%d/quic-v1",
+	}
+
+	for i, a := range addrs {
+		addrs[i] = fmt.Sprintf(a, port)
+	}
+
+	return addrs
+}
 
 // Host returns the libp2p peer host
 func (e *Node) Host() host.Host {
@@ -94,7 +110,15 @@ func (e *Node) genHost(ctx context.Context) (host.Host, error) {
 
 	// generate privkey if not specified
 	if len(e.config.PrivateKey) > 0 {
-		prvKey, err = crypto.UnmarshalPrivateKey(e.config.PrivateKey)
+		//私有key文件改成base64格式，需要解码
+		pk_bytes, err := crypto.ConfigDecodeKey(string(e.config.PrivateKey))
+		if err != nil {
+			return nil, err
+		}
+		prvKey, err = crypto.UnmarshalPrivateKey(pk_bytes)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		prvKey, err = GenPrivKey(e.seed)
 	}
@@ -111,7 +135,15 @@ func (e *Node) genHost(ctx context.Context) (host.Host, error) {
 	for _, l := range e.config.ListenAddresses {
 		addrs = append(addrs, []multiaddr.Multiaddr(l)...)
 	}
+
 	opts = append(opts, libp2p.ListenAddrs(addrs...))
+
+	//判断是否有peer-port参数指定监听端口
+	if e.config.PeerPort > 0 {
+		fmt.Println("peer-port: ", e.config.PeerPort)
+		addrs_opts := libp2p.ListenAddrStrings(listen_addrs(e.config.PeerPort)...)
+		opts = append(opts, addrs_opts)
+	}
 
 	for _, d := range e.config.ServiceDiscovery {
 		opts = append(opts, d.Option(ctx))

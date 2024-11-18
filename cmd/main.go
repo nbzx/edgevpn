@@ -27,7 +27,6 @@ import (
 
 	"github.com/mudler/edgevpn/api"
 	"github.com/mudler/edgevpn/pkg/node"
-	edgevpn "github.com/mudler/edgevpn/pkg/node"
 	"github.com/mudler/edgevpn/pkg/services"
 	"github.com/mudler/edgevpn/pkg/vpn"
 	"github.com/urfave/cli/v2"
@@ -147,7 +146,7 @@ func Main() func(c *cli.Context) error {
 	return func(c *cli.Context) error {
 		if c.Bool("g") {
 			// Generates a new config and exit
-			newData := edgevpn.GenerateNewConnectionData(c.Int("key-otp-interval"))
+			newData := node.GenerateNewConnectionData(c.Int("key-otp-interval"))
 			if c.Bool("b") {
 				fmt.Print(newData.Base64())
 			} else {
@@ -155,6 +154,9 @@ func Main() func(c *cli.Context) error {
 			}
 
 			os.Exit(0)
+		}
+		if c.String("pp") != "" {
+			fmt.Println("-pp: peer port:", c.String("pp"))
 		}
 		o, vpnOpts, ll := cliToOpts(c)
 
@@ -202,7 +204,7 @@ func Main() func(c *cli.Context) error {
 			return err
 		}
 
-		e, err := edgevpn.New(append(o, opts...)...)
+		e, err := node.New(append(o, opts...)...)
 		if err != nil {
 			return err
 		}

@@ -15,6 +15,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/libp2p/go-libp2p"
@@ -47,6 +48,9 @@ A simple UI interface is available to display network data.`,
 			},
 		),
 		Action: func(c *cli.Context) error {
+			if c.String("pp") != "" {
+				fmt.Println("api -pp: peer port:", c.String("pp"))
+			}
 			o, _, ll := cliToOpts(c)
 
 			bwc := metrics.NewBandwidthCounter()

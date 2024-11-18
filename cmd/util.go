@@ -359,6 +359,13 @@ var CommonFlags []cli.Flag = []cli.Flag{
 		EnvVars: []string{"EDGEVPNPEERGATEINTERVAL"},
 		Value:   120,
 	},
+	&cli.IntFlag{
+		Name:    "peer-port",
+		Aliases: []string{"pp"},
+		Usage:   "Peer listen port",
+		EnvVars: []string{"PEERPORT"},
+		Value:   0,
+	},
 }
 
 func stateDir() string {
@@ -483,8 +490,14 @@ func cliToOpts(c *cli.Context) ([]node.Option, []vpn.Option, *logger.Logger) {
 		}
 	}
 
+	if c.String("peer-port") != "" {
+		fmt.Println("-- peer-port:", c.String("peer-port"))
+		nc.PeerPort = c.Int("peer-port")
+	}
+
 	// Check if we have any privkey identity cached already
 	if c.Bool("privkey-cache") {
+		fmt.Println("privkey-cache:", c.String("privkey-cache"))
 		keyFile := filepath.Join(c.String("privkey-cache-dir"), "privkey")
 		dat, err := os.ReadFile(keyFile)
 		if err == nil && len(dat) > 0 {
